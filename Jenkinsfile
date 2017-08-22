@@ -42,12 +42,11 @@ try {
 
   node {
     wrap([$class: 'AnsiColorBuildWrapper', 'colorMapName': 'XTerm', 'defaultFg': 2, 'defaultBg':1]) {
-
+      cleanWs()
       jenkinsSlack('start')
       checkout scm
 
       stage('bootstrap') {
-        cleanWs()
         sh "./scripts/bootstrap"
       }
 
