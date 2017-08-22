@@ -23,7 +23,6 @@ NETWORK
 # Creating the plan output
 if [ "${TERRAFORM_APPLY}" == "true" ]; then
   make plan-output
-fi
 elif [ "${TERRAFORM_DESTROY}" == "true" ]; then
   make plan-destroy
 fi
