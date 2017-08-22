@@ -11,5 +11,8 @@ aws_env_name = "$AWS_ENV_NAME"
 aws_s3_bucket = "$AWS_S3_BUCKET"
 MAIN
 
+
 # Creating the AWS Bucket
+set +e
 aws s3 mb s3://${AWS_S3_BUCKET}
+set -e
