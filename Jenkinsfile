@@ -47,6 +47,7 @@ try {
       checkout scm
 
       stage('bootstrap') {
+        cleanWs()
         sh "./scripts/bootstrap"
       }
 
