@@ -1,4 +1,4 @@
-#!/bin/bash -x
+#!/bin/bash -ex
 
 # Initialize main variables
 ./scripts/main
@@ -15,9 +15,9 @@ aws_vpc_cidr = "$AWS_VPC_CIDR"
 aws_public_subnet_cidrs = "$AWS_PUBLIC_SUBNET_CIDRS"
 aws_private_subnet_cidrs = "$AWS_PRIVATE_SUBNET_CIDRS"
 aws_subnet_azs = "$AWS_SUBNET_AZS"
-server_cert_path = "../files/crt.pem"
-server_key_path = "../files/key.pem"
-ca_chain_path = "../files/chain.pem"
+server_cert_path = "../../files/crt.pem"
+server_key_path = "../../files/key.pem"
+ca_chain_path = "../../files/chain.pem"
 NETWORK
 
 # Creating the plan output

@@ -9,7 +9,7 @@ data "terraform_remote_state" "network" {
 
    config {
       bucket = "${var.aws_s3_bucket}"
-      key = "${var.tfstate_key}"
+      key = "${var.aws_env_name}/network/terraform.tfstate"
       region = "${var.aws_region}"
    }
 }
