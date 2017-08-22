@@ -1,0 +1,8 @@
+.terraform*
+.git/
+.env
+*.tfstate*
+*.tfvars
+.terraform*
+*.pem
+*.plan

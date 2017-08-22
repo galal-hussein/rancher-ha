@@ -1,0 +1,240 @@
+#cloud-config
+write_files:
+  - path: /opt/rancher/bin/bootstrap.sh
+    permissions: "0770"
+    content: |
+      #!/bin/bash
+      set -uxe
+
+      ###############################################################################
+      # figure out the OS family for our context
+      ###############################################################################
+      get_osfamily() {
+        local osfamily='unknown'
+
+        # ugly way to figure out what OS family we are running.
+        set +e
+        if apt-get --version > /dev/null 2>&1; then
+      osfamily='debian'
+        elif yum --version > /dev/null 2>&1; then
+      osfamily='redhat'
+        else
+      osfamily='rancher'
+        fi
+        set -e
+
+        echo "$${osfamily}"
+      }
+
+
+      ###############################################################################
+      # Docker volume LVM adjustments done the right way. :\
+      ###############################################################################
+      docker_lvm_thinpool_config() {
+        # configure selinux
+        if [ ${rhel_selinux} == "false" ]; then
+          sudo setenforce 0
+        fi
+        # else it's enabled by default
+
+        wget -O - "https://releases.rancher.com/install-docker/${docker_version}.sh" | sudo bash -
+
+        sudo systemctl stop docker
+
+      sudo tee /etc/sysconfig/docker-storage <<-EOF
+      DOCKER_STORAGE_OPTIONS=--storage-driver=devicemapper --storage-opt=dm.thinpooldev=/dev/mapper/docker-thinpool --storage-opt dm.use_deferred_removal=true
+      EOF
+        sudo mkdir -p /etc/docker
+      sudo tee /etc/docker/daemon.json <<-EOF
+      {
+      "storage-driver": "devicemapper",
+      "storage-opts": [
+      "dm.thinpooldev=/dev/mapper/docker-thinpool",
+      "dm.use_deferred_removal=true",
+      "dm.use_deferred_deletion=true"
+      ]
+      }
+      EOF
+        sudo rm -rf /var/lib/docker
+        sudo systemctl daemon-reload
+        sudo systemctl restart docker
+
+      }
+
+
+      ###############################################################################
+      # Docker Installation for Native Docker
+      ###############################################################################
+      docker_lvm_thinpool_config_native() {
+        rhel_selinux="${rhel_selinux}" || exit $?
+        sudo yum-config-manager --enable rhui-REGION-rhel-server-extras
+        docker_version_match=$(sudo yum --showduplicates list docker | grep ${docker_version} | sort -rn | head -n1 | awk -F' ' '{print $2}' | cut -d":" -f2)
+        sudo yum install -y docker-$docker_version_match
+        sudo systemctl start docker
+
+        # Set up SeLinux
+        if [ $${rhel_selinux} == "true" ]; then
+          docker_selinux
+        else
+          sudo setenforce 0
+        fi
+
+        sudo tee /etc/sysconfig/docker-storage <<-EOF
+        DOCKER_STORAGE_OPTIONS=--storage-driver=devicemapper --storage-opt=dm.thinpooldev=/dev/mapper/docker-thinpool --storage-opt dm.use_deferred_removal=true
+      	EOF
+        sudo rm -rf /var/lib/docker
+        sudo systemctl daemon-reload
+        sudo systemctl restart docker
+      }
+
+
+      ###############################################################################
+      # Docker SeLinux Configuration
+      ###############################################################################
+      docker_selinux() {
+        sudo yum install -y selinux-policy-devel
+        sudo echo 'policy_module(virtpatch, 1.0)' >> virtpatch.te
+        sudo echo 'gen_require(`' >> virtpatch.te
+        sudo echo 'type svirt_lxc_net_t;' >> virtpatch.te
+        sudo echo "')" >> virtpatch.te
+        sudo echo "allow svirt_lxc_net_t self:netlink_xfrm_socket create_netlink_socket_perms;" >> virtpatch.te
+
+        sudo make -f /usr/share/selinux/devel/Makefile
+        sudo semodule -i virtpatch.pp
+        count=$(sudo semodule -l | grep virtpatch | wc -l)
+        if [ $count -eq 0 ]; then
+          echo "SeLinux module is not loaded properly"
+          exit 1
+        fi
+        sudo systemctl stop docker
+        sleep 10
+      }
+
+      ################################################################################
+      # install specified Docker version
+      ################################################################################
+      docker_install_tag_version() {
+        wget -O - "https://releases.rancher.com/install-docker/${docker_version}.sh" | sudo bash -
+        sudo service docker restart
+      }
+
+      ###############################################################################
+      # populate system with Rancher Labs SSH keys
+      ###############################################################################
+      fetch_rancherlabs_ssh_keys() {
+        wget -c -O - \
+       https://raw.githubusercontent.com/rancherlabs/ssh-pub-keys/master/ssh-pub-keys/ci >> "/home/$1/.ssh/authorized_keys"
+      }
+
+
+      ###############################################################################
+      # install things required to work well / work well w/ AWS
+      ###############################################################################
+      system_prep() {
+        local osfamily
+        local os_user
+        osfamily="$(get_osfamily)" || exit $?
+
+        case "$${osfamily}" in
+      'redhat')
+          os_user='ec2-user'
+          sudo yum remove -y epel-release
+          sudo yum install -y wget
+          sudo wget -O /etc/yum.repos.d/epel.repo https://mirror.openshift.com/mirror/epel/epel7.repo
+          sudo yum install -y deltarpm
+
+          sudo yum install --skip-broken -y jq python-pip htop python-docutils mosh
+          sudo pip install awscli
+          sudo wget -O /usr/local/bin/ec2metadata http://s3.amazonaws.com/ec2metadata/ec2-metadata
+          sudo chmod +x /usr/local/bin/ec2metadata
+          ;;
+
+      'debian')
+          os_user='ubuntu'
+          export DEBIAN_FRONTEND=noninteractive
+          export DEBCONF_NONINTERACTIVE_SEEN=true
+          sudo apt-get update
+          sudo apt-get install -y jq awscli htop mosh cloud-guest-utils
+          ;;
+
+      'rancher')
+          os_user='rancher'
+          ;;
+        esac
+
+        fetch_rancherlabs_ssh_keys $${os_user}
+      }
+
+
+      ###############################################################################
+      # make adjustments to LVM etc for RedHat OS family
+      ###############################################################################
+      redhat_config() {
+
+        sudo yum clean all -y
+        sudo yum makecache
+
+        sudo yum install -y lvm2
+        sudo pvcreate -ff -y /dev/xvdb
+        sudo vgcreate docker /dev/xvdb
+
+        sudo systemctl restart systemd-udevd.service
+        echo "Waiting for storage device mappings to settle..."; sleep 10
+
+        sudo lvcreate --wipesignatures y -n thinpool docker -l 95%VG
+        sudo lvcreate --wipesignatures y -n thinpoolmeta docker -l 1%VG
+        sudo lvconvert -y --zero n -c 512K --thinpool docker/thinpool --poolmetadata docker/thinpoolmeta
+
+        echo 'Modifying Docker config to use LVM thinpool setup...'
+        sudo tee /etc/lvm/profile/docker-thinpool.profile <<-EOF
+      activation {
+        thin_pool_autoextend_threshold=80
+        thin_pool_autoextend_percent=20
+      }
+      EOF
+
+        sudo lvchange --metadataprofile docker-thinpool docker/thinpool
+        sudo lvs -o+seg_monitor
+      }
+
+
+      ###############################################################################
+      # the main() function
+      ###############################################################################
+      main() {
+        system_prep
+
+        local osfamily
+        osfamily="$(get_osfamily)" || exit $?
+
+        if [ 'redhat' == "$${osfamily}" ]; then
+        echo 'Performing special RHEL osfamily storage config...'
+        redhat_config
+        if [ "${rhel_docker_native}" == "true" ]; then
+          docker_lvm_thinpool_config_native
+        else
+          docker_lvm_thinpool_config
+        fi
+
+        elif [ 'debian' == "$${osfamily}" ]; then
+          docker_install_tag_version
+        else
+          echo "OS family \'$${osfamily}\' will default to vendor supplied and pre-installed Docker engine."
+        fi
+      }
+
+      main
+      sleep 120
+
+      cat > /opt/rancher/bin/kickoff.sh << EOF
+      #!/bin/bash
+      while ! docker version >/dev/null 2>&1; do echo 'waiting for docker...'; sleep 2; done
+      while ! ping -c 1 8.8.8.8 >/dev/null 2>&1; do echo 'waiting for net...'; sleep 2; done
+
+      sleep 5
+      docker run -d -p 8080:8080 -p 9345:9345 --name rancher-server --restart=always -e CATTLE_USE_LOCAL_ARTIFACTS=false -e DEFAULT_CATTLE_API_UI_INDEX=https://releases.rancher.com/ui/${api_ui_version} -e JAVA_OPTS="-Xmx8g" ${rancher_version} --advertise-address $(wget -qO - http://169.254.169.254/2016-06-30/meta-data/${ip-addr}) --db-host ${database_endpoint} --db-pass ${database_password} --db-user ${database_user}
+      EOF
+      sudo chmod +x /opt/rancher/bin/kickoff.sh
+      sudo sh /opt/rancher/bin/kickoff.sh &
+runcmd:
+  - /opt/rancher/bin/bootstrap.sh

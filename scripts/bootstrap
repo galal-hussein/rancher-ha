@@ -1,0 +1,15 @@
+#!/bin/bash -x
+
+# Setting up environment variables
+env | egrep '^(TERRAFORM_|AWS_|RANCHER_).*\=.+' | sort > .env
+
+# Add the certificates
+mkdir -p files
+touch files/{key.pem,crt.pem,chain.pem}
+echo -e "${RANCHER_SSL_CERT}" > files/crt.pem
+echo -e "${RANCHER_SSL_KEY}" > files/key.pem
+echo -e "${RANCHER_SSL_CHAIN}" > files/chain.pem
+chmod 600 files/*
+
+# Pull the Rancher Terraform modules
+git clone https://github.com/rancher/terraform-modules.git

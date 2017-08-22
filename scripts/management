@@ -1,0 +1,39 @@
+#!/bin/bash -x
+
+# Initialize main variables
+./scripts/main
+
+# Creating database variables
+pushd ./rancher-ha/management-cluster
+
+# Initialize with remote backend
+make init-s3
+
+# Initialize networking vars
+cat <<MGMT >> management-cluster.tfvars
+rancher_version = "${RANCHER_VERSION}"
+aws_ami_id = "${AWS_AMI_ID}"
+aws_instance_type = "${AWS_INSTANCE_TYPE}"
+spot_enabled = "${AWS_SPOT_ENABLED}"
+api_ui_version = "${RANCHER_API_UI_VERSION}"
+rancher_hostname = "${AWS_ENV_NAME}"
+domain_name = "${AWS_DOMAIN_NAME}"
+docker_version = "${RANCHER_DOCKER_VERSION}"
+rhel_selinux = "${RANCHER_RHEL_SELINUX}"
+rhel_docker_native = "${RANCHER_DOCKER_RHEL_NATIVE}"
+key_name = "${AWS_KEY_NAME}"
+zone_id = "${AWS_ZONE_ID}"
+MGMT
+
+# Creating the plan output
+if [ "${TERRAFORM_APPLY}" == "true" ]; then
+  make plan-output
+fi
+elif [ "${TERRAFORM_DESTROY}" == "true" ]; then
+  make plan-destroy
+fi
+
+# Applying the plan
+PLAN=`ls *.plan` make apply-plan
+
+popd

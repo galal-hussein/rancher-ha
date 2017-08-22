@@ -1,0 +1,11 @@
+#!/bin/bash
+
+count=1
+while [[ 3 -gt $count ]]; do
+    docker build --rm -t rancherlabs/terraform_ha_v2:latest -f Dockerfile .
+    if [[ $? -eq 0 ]]; then break; fi
+    count=$(($count + 1))
+    echo "Repeating failed Docker build ${count} of 3..."
+done
+
+echo "Success: Image Built and environments initialized"

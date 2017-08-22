@@ -1,0 +1,34 @@
+#!/bin/bash -x
+
+# Initialize main variables
+./scripts/main
+
+# Creating network variables
+pushd ./rancher-ha/network
+
+# Initialize with remote backend
+make init-s3
+
+# Initialize networking vars
+cat <<NETWORK >> network.tfvars
+aws_vpc_cidr = "$AWS_VPC_CIDR"
+aws_public_subnet_cidrs = "$AWS_PUBLIC_SUBNET_CIDRS"
+aws_private_subnet_cidrs = "$AWS_PRIVATE_SUBNET_CIDRS"
+aws_subnet_azs = "$AWS_SUBNET_AZS"
+server_cert_path = "../files/crt.pem"
+server_key_path = "../files/key.pem"
+ca_chain_path = "../files/chain.pem"
+NETWORK
+
+# Creating the plan output
+if [ "${TERRAFORM_APPLY}" == "true" ]; then
+  make plan-output
+fi
+elif [ "${TERRAFORM_DESTROY}" == "true" ]; then
+  make plan-destroy
+fi
+
+# Applying the plan
+PLAN=`ls *.plan` make apply-plan
+
+popd

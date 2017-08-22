@@ -1,0 +1,29 @@
+#!/bin/bash -x
+
+# Initialize main variables
+./scripts/main
+
+# Creating database variables
+pushd ./rancher-ha/database
+
+# Initialize with remote backend
+make init-s3
+
+# Initialize networking vars
+cat <<DB >> database.tfvars
+database_password="$AWS_RDS_DB_PASSWORD"
+aws_rds_instance_class="$AWS_RDS_INSTANCE_CLASS"
+DB
+
+# Creating the plan output
+if [ "${TERRAFORM_APPLY}" == "true" ]; then
+  make plan-output
+fi
+elif [ "${TERRAFORM_DESTROY}" == "true" ]; then
+  make plan-destroy
+fi
+
+# Applying the plan
+PLAN=`ls *.plan` make apply-plan
+
+popd
