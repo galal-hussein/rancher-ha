@@ -4,17 +4,6 @@ provider "aws" {
   region     = "${var.aws_region}"
 }
 
-module "vpc_network" {
-  source = "../../modules/aws/network/networks/full-vpc"
-
-  vpc_name             = "${var.aws_env_name}"
-  vpc_cidr             = "${var.aws_vpc_cidr}"
-  region               = "${var.aws_region}"
-  public_subnet_cidrs  = "${var.aws_public_subnet_cidrs}"
-  private_subnet_cidrs = "${var.aws_private_subnet_cidrs}"
-  azs                  = "${var.aws_subnet_azs}"
-}
-
 resource "aws_iam_server_certificate" "rancher_com" {
   name_prefix       = "${var.aws_env_name}-certificate"
   certificate_body  = "${file("${var.server_cert_path}")}"
@@ -29,13 +18,13 @@ resource "aws_iam_server_certificate" "rancher_com" {
 module "management_sgs" {
   source = "../../modules/aws/network/security_groups/mgmt/ha"
 
-  vpc_id               = "${module.vpc_network.vpc_id}"
-  private_subnet_cidrs = "${var.aws_public_subnet_cidrs}"
+  vpc_id               = "${var.aws_vpc_id}"
+  private_subnet_cidrs = "${var.aws_subnet_cidrs}"
 }
 
 module "bastion_sgs" {
   source = "../../modules/aws/network/security_groups/bastion"
 
   name                 = "${var.aws_env_name}"
-  vpc_id               = "${module.vpc_network.vpc_id}"
+  vpc_id               = "${var.aws_vpc_id}"
 }
