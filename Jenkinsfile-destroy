@@ -41,39 +41,41 @@ def lastBuildResult() {
 try {
 
   node {
-    wrap([$class: 'AnsiColorBuildWrapper', 'colorMapName': 'XTerm', 'defaultFg': 2, 'defaultBg':1]) {
-      cleanWs()
-      jenkinsSlack('start')
-      checkout scm
+    withEnv(["AWS_ZONE_ID=xxxxxxxxx", "AWS_SUBNET_CIDRS=0.0.0.0/0"]) {
+      wrap([$class: 'AnsiColorBuildWrapper', 'colorMapName': 'XTerm', 'defaultFg': 2, 'defaultBg':1]) {
+        cleanWs()
+        jenkinsSlack('start')
+        checkout scm
 
-      stage('bootstrap') {
-        sh "./scripts/bootstrap"
-      }
+        stage('bootstrap') {
+          sh "./scripts/bootstrap"
+        }
 
-      stage('Build') {
-        sh "./scripts/build"
-      }
+        stage('Build') {
+          sh "./scripts/build"
+        }
 
-      stage ('Destroy Management Components') {
-        sh "docker run --rm  " +
-          "--env-file .env " +
-          "rancherlabs/terraform_ha_v2:latest /bin/bash -c \'cd \"\$(pwd)\" && ./scripts/management\'"
-      }
+        stage ('Destroy Management Components') {
+          sh "docker run --rm  " +
+            "--env-file .env " +
+            "rancherlabs/terraform_ha_v2:latest /bin/bash -c \'cd \"\$(pwd)\" && ./scripts/management\'"
+        }
 
-      stage ('Destroy Database Components') {
-        sh "docker run --rm  " +
-          "--env-file .env " +
-          "rancherlabs/terraform_ha_v2:latest /bin/bash -c \'cd \"\$(pwd)\" && ./scripts/database\'"
-      }
+        stage ('Destroy Database Components') {
+          sh "docker run --rm  " +
+            "--env-file .env " +
+            "rancherlabs/terraform_ha_v2:latest /bin/bash -c \'cd \"\$(pwd)\" && ./scripts/database\'"
+        }
 
-      stage ('Destroy Network Components') {
-        sh "docker run --rm  " +
-          "--env-file .env " +
-          "rancherlabs/terraform_ha_v2:latest /bin/bash -c \'cd \"\$(pwd)\" && ./scripts/network\'"
-      }
+        stage ('Destroy Network Components') {
+          sh "docker run --rm  " +
+            "--env-file .env " +
+            "rancherlabs/terraform_ha_v2:latest /bin/bash -c \'cd \"\$(pwd)\" && ./scripts/network\'"
+        }
 
 
-    } // wrap
+      } // wrap
+    }
   } // node
 } catch(err) { currentBuild.result = 'FAILURE' }
 
