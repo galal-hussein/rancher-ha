@@ -23,10 +23,6 @@ resource "aws_iam_server_certificate" "rancher_com" {
 //  private_subnet_cidrs = "${var.aws_subnet_cidrs}"
 //}
 
-variable "vpc_id" {}
-
-variable "private_subnet_cidrs" {}
-
 resource "aws_security_group" "management_elb" {
   name        = "${var.aws_env_name}-management_elb_sg"
   description = "Allow ports rancher "
