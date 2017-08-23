@@ -74,9 +74,13 @@ try {
 
       stage ('Wait until the setup is ready') {
         sh '''
-            until $(curl --silent --head --fail https://${AWS_DOMAIN_NAME}); do
-            sleep 5
+            while true; do
+              if curl -sSfI https://${AWS_DOMAIN_NAME}/v2-beta; then
+                break
+              fi
+            sleep 10
             done
+
             echo "Rancher HA URL: https://${AWS_DOMAIN_NAME}"
         '''
         }
