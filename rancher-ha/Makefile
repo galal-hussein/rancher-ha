@@ -1,7 +1,7 @@
 MODULE := $(shell basename $$PWD)
 TIMESTAMP := $(shell date +%Y-%m-%d-%H%M%S)
 
-.PHONY: get plan plan-destroy plan-output apply
+.PHONY: init init-s3 get plan plan-destroy plan-output apply
 
 state-pull:
 	@terraform remote pull
@@ -11,6 +11,7 @@ init:
 
 init-s3:
 	@terraform init -backend=true -backend-config="bucket=$(AWS_S3_BUCKET)" -backend-config="key=$(AWS_ENV_NAME)/$(MODULE)/terraform.tfstate" -backend-config="region=$(AWS_DEFAULT_REGION)"
+
 get:
 	@terraform get
 
