@@ -9,7 +9,7 @@ module "database" {
 
   rds_instance_name  = "${var.aws_env_name}"
   security_group_name = "${var.aws_env_name}_sg_db"
-  
+
   name = "${var.aws_env_name}"
   database_password  = "${var.database_password}"
   vpc_id             = "${var.aws_vpc_id}"
@@ -18,5 +18,5 @@ module "database" {
   db_subnet_ids      = "${concat(split(",", var.aws_subnet_ids))}"
   rds_is_multi_az = "false"
   skip_final_snapshot = "true"
-  backup_retention_period = 1
+  backup_retention_period = 0
 }
