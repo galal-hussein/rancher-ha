@@ -2,8 +2,8 @@
 
 
 // Get the AWS prefix if it exists
-def tf_name() {
-  try { if ('' != TF_NAME) { return TF_NAME } }
+def aws_env_name() {
+  try { if ('' != AWS_ENV_NAME) { return AWS_ENV_NAME } }
   catch (MissingPropertyException e) { return false }
 }
 
@@ -18,8 +18,8 @@ def slack_channel() {
 // simplify the generation of Slack notifications for start and finish of Job
 def jenkinsSlack(type) {
   channel = slack_channel()
-  tf_name = tf_name()
-  def jobInfo = "\n » ${tf_name} :: ${JOB_NAME} #${env.BUILD_NUMBER} (<${env.BUILD_URL}|job>) (<${env.BUILD_URL}/console|console>)"
+  aws_env_name = aws_env_name()
+  def jobInfo = "\n » ${aws_env_name} :: ${JOB_NAME} #${env.BUILD_NUMBER} (<${env.BUILD_URL}|job>) (<${env.BUILD_URL}/console|console>)"
 
   if (type == 'start'){
     slackSend channel: channel, color: 'blue', message: "build started${jobInfo}"
@@ -42,29 +42,37 @@ try {
 
   node {
     wrap([$class: 'AnsiColorBuildWrapper', 'colorMapName': 'XTerm', 'defaultFg': 2, 'defaultBg':1]) {
-
+      cleanWs()
       jenkinsSlack('start')
       checkout scm
 
-      stage('build') {
-        sh "./scripts/build.sh"
+      stage('bootstrap') {
+        sh "./scripts/bootstrap"
       }
-      stage ('terraform run') {
+
+      stage('Build') {
+        sh "./scripts/build"
+      }
+
+      stage ('Destroy Management Components') {
         sh "docker run --rm  " +
           "--env-file .env " +
-          "rancherlabs/terraform_ha:latest /bin/bash -c \'cd \"\$(pwd)\" && ./scripts/bootstrap.sh\'"
+          "rancherlabs/terraform_ha_v2:latest /bin/bash -c \'cd \"\$(pwd)\" && ./scripts/management\'"
       }
-      if ( "true" == "${TERRAFORM_APPLY}" ) {
-        stage ('Wait until the setup is ready') {
-          sh '''
-              until $(curl --output /dev/null --silent --head --fail https://${TF_FQDN}); do
-              printf '.'
-              sleep 30
-              done
-              echo "Rancher HA URL: https://${TF_FQDN}"
-          '''
-        }
+
+      stage ('Destroy Database Components') {
+        sh "docker run --rm  " +
+          "--env-file .env " +
+          "rancherlabs/terraform_ha_v2:latest /bin/bash -c \'cd \"\$(pwd)\" && ./scripts/database\'"
       }
+
+      stage ('Destroy Network Components') {
+        sh "docker run --rm  " +
+          "--env-file .env " +
+          "rancherlabs/terraform_ha_v2:latest /bin/bash -c \'cd \"\$(pwd)\" && ./scripts/network\'"
+      }
+
+
     } // wrap
   } // node
 } catch(err) { currentBuild.result = 'FAILURE' }

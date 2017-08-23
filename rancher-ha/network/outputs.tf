@@ -8,5 +8,6 @@ output "elb_sg_id" {
 
 output "management_node_sgs" {
   value = "${join(",", list(aws_security_group.management_allow_elb.id,
-            aws_security_group.management_allow_internal.id))}"
+            aws_security_group.management_allow_internal.id,
+            module.bastion_sgs.bastion_id)))}"
 }
