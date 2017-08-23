@@ -87,7 +87,7 @@ resource "aws_security_group" "management_allow_elb" {
 resource "aws_security_group" "management_allow_internal" {
   name        = "rancher_ha_allow_internal"
   description = "Allow Connection from internal"
-  vpc_id      = "${var.vpc_id}"
+  vpc_id      = "${var.aws_vpc_id}"
 
   egress {
     from_port   = 0
