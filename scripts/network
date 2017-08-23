@@ -7,7 +7,7 @@
 pushd ./rancher-ha/network
 
 # Initialize with remote backend
-make init-s3
+make SHELL='sh -x' init-s3
 
 # Initialize networking vars
 cat <<NETWORK >> network.tfvars
