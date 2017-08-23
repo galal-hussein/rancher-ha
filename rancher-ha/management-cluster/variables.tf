@@ -43,13 +43,13 @@ variable "rhel_docker_native" {}
 variable "key_name" {}
 
 variable "scale_min_size" {
-  default = 3
+  default = "3"
 }
 
 variable "scale_max_size" {
-  default = 3
+  default = "3"
 }
 
 variable "scale_desired_size" {
-  default = 3
+  default = "3"
 }
