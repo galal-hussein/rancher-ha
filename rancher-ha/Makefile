@@ -10,10 +10,7 @@ init:
 	@terraform init
 
 init-s3:
-	@terraform init -backend=true \
-	                -backend-config="bucket=$(AWS_S3_BUCKET)" \
-	                -backend-config="key=$(TF_ENV_NAME)/$(MODULE)/terraform.tfstate" \
-	                -backend-config="region=$(AWS_DEFAULT_REGION)"
+	@terraform init -backend=true -backend-config="bucket=$(AWS_S3_BUCKET)" -backend-config="key=$(AWS_ENV_NAME)/$(MODULE)/terraform.tfstate" -backend-config="region=$(AWS_DEFAULT_REGION)"
 get:
 	@terraform get
 
