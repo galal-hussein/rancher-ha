@@ -172,8 +172,6 @@ write_files:
           fi
         elif [ 'debian' == "$${osfamily}" ]; then
           docker_install_tag_version
-        elif [ 'rancher' == "$${osfamily}" ]; then
-          # docker_switch_ros
         else
           echo "OS family \'$${osfamily}\' will default to vendor supplied and pre-installed Docker engine."
         fi
