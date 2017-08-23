@@ -8,6 +8,8 @@ module "database" {
   source = "../../modules/aws/data/rds"
 
   rds_instance_name  = "${var.aws_env_name}"
+  security_group_name = "${var.aws_env_name}_sg_db"
+  
   name = "${var.aws_env_name}"
   database_password  = "${var.database_password}"
   vpc_id             = "${var.aws_vpc_id}"
