@@ -103,7 +103,7 @@ write_files:
       docker_switch_ros() {
         local ros_docker_version
         ros_docker_version=$(ros engine list | grep -o docker-${docker_version}.*)
-        ros engine switch ${ros_docker_version}
+        ros engine switch $${ros_docker_version}
       }
 
       ###############################################################################
