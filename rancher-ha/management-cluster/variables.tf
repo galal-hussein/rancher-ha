@@ -41,3 +41,7 @@ variable "rhel_selinux" {}
 variable "rhel_docker_native" {}
 
 variable "key_name" {}
+
+variable "scale_min_size" {}
+variable "scale_max_size" {}
+variable "scale_desired_size" {}

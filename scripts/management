@@ -23,6 +23,9 @@ rhel_selinux = "${RANCHER_RHEL_SELINUX}"
 rhel_docker_native = "${RANCHER_DOCKER_RHEL_NATIVE}"
 key_name = "${AWS_KEY_NAME}"
 zone_id = "${AWS_ZONE_ID}"
+scale_min_size = "${AWS_SCALE_MIN_SIZE}"
+scale_max_size = "${AWS_SCALE_MAX_SIZE}"
+scale_desired_size = "${AWS_SCALE_DESIRED_SIZE}"
 MGMT
 
 # Creating the plan output

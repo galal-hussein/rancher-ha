@@ -72,6 +72,10 @@ module "compute" {
   subnet_cidrs                = "${var.aws_subnet_cidrs}"
   externally_defined_userdata = "${data.template_file.userdata.rendered}"
   health_check_type           = "${var.health_check_type}"
+
+  scale_min_size         = "${var.scale_min_size}"
+  scale_max_size         = "${var.scale_max_size}"
+  scale_desired_size     = "${var.scale_desired_size}"
 }
 
 resource "aws_route53_record" "www" {

@@ -72,17 +72,14 @@ try {
           "rancherlabs/terraform_ha_v2:latest /bin/bash -c \'cd \"\$(pwd)\" && ./scripts/management\'"
       }
 
-      if ( "true" == "${TERRAFORM_APPLY}" ) {
-        stage ('Wait until the setup is ready') {
-          sh '''
-              until $(curl --output /dev/null --silent --head --fail https://${AWS_DOMAIN_NAME}); do
-              printf '.'
-              sleep 30
-              done
-              echo "Rancher HA URL: https://${AWS_DOMAIN_NAME}"
-          '''
+      stage ('Wait until the setup is ready') {
+        sh '''
+            until $(curl --silent --head --fail https://${AWS_DOMAIN_NAME}); do
+            sleep 5
+            done
+            echo "Rancher HA URL: https://${AWS_DOMAIN_NAME}"
+        '''
         }
-      }
     } // wrap
   } // node
 } catch(err) { currentBuild.result = 'FAILURE' }
