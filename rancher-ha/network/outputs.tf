@@ -3,7 +3,7 @@ output "rancher_com_arn" {
 }
 
 output "elb_sg_id" {
-  value = "${aws_security_group.management_elb.id}"
+  value = "${module.management_sgs.elb_sg_id}"
 }
 
 output "management_node_sgs" {
