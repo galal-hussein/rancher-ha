@@ -1,4 +1,8 @@
 #cloud-config
+rancher:
+  docker:
+    engine: docker-${docker_version}
+
 write_files:
   - path: /opt/rancher/bin/bootstrap.sh
     permissions: "0770"
@@ -10,20 +14,20 @@ write_files:
       # figure out the OS family for our context
       ###############################################################################
       get_osfamily() {
-        local osfamily='unknown'
+          local osfamily='unknown'
 
-        # ugly way to figure out what OS family we are running.
-        set +e
-        if apt-get --version > /dev/null 2>&1; then
-      osfamily='debian'
-        elif yum --version > /dev/null 2>&1; then
-      osfamily='redhat'
-        else
-      osfamily='rancher'
-        fi
-        set -e
+          # ugly way to figure out what OS family we are running.
+          set +e
+          if apt-get --version > /dev/null 2>&1; then
+            osfamily='debian'
+          elif yum --version > /dev/null 2>&1; then
+            osfamily='redhat'
+          elif ros --version > /dev/null 2>&1; then
+            osfamily='rancher'
+          fi
+          set -e
 
-        echo "$${osfamily}"
+          echo "$${osfamily}"
       }
 
 
