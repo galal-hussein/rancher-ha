@@ -190,7 +190,7 @@ write_files:
       while ! ping -c 1 8.8.8.8 >/dev/null 2>&1; do echo 'waiting for net...'; sleep 2; done
 
       sleep 5
-      docker run -d -p 8080:8080 -p 9345:9345 --name rancher-server --restart=always -e CATTLE_USE_LOCAL_ARTIFACTS=false -e DEFAULT_CATTLE_API_UI_INDEX=https://releases.rancher.com/ui/${api_ui_version} -e JAVA_OPTS="-Xmx8g" ${rancher_version} --advertise-address $(wget -qO - http://169.254.169.254/2016-06-30/meta-data/${ip-addr}) --db-host ${database_endpoint} --db-pass ${database_password} --db-user ${database_user}
+      docker run -d -p 8080:8080 -p 9345:9345 --name rancher-server --restart=always -e CATTLE_USE_LOCAL_ARTIFACTS=false -e JAVA_OPTS="-Xmx8g" ${rancher_version} --advertise-address $(wget -qO - http://169.254.169.254/2016-06-30/meta-data/${ip-addr}) --db-host ${database_endpoint} --db-pass ${database_password} --db-user ${database_user}
       EOF
       sudo chmod +x /opt/rancher/bin/kickoff.sh
       sudo sh /opt/rancher/bin/kickoff.sh &

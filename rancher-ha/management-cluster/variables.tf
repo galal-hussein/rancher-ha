@@ -16,17 +16,15 @@ variable "aws_subnet_ids" {}
 
 variable "aws_s3_bucket" {}
 
-variable "aws_ami_id" {}
-
 variable "aws_env_name" {}
 
 variable "aws_instance_type" {}
 
 variable "rancher_version" {}
 
-variable "api_ui_version" {}
-
 variable "spot_enabled" {}
+
+variable "operating_system" {}
 
 variable "zone_id" {}
 

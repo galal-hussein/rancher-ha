@@ -12,7 +12,7 @@ make init-s3
 # Initialize networking vars
 cat <<MGMT >> management-cluster.tfvars
 rancher_version = "${RANCHER_VERSION}"
-aws_ami_id = "${AWS_AMI_ID}"
+operating_system = "${AWS_OPERATING_SYSTEM}"
 aws_instance_type = "${AWS_INSTANCE_TYPE}"
 spot_enabled = "${AWS_SPOT_ENABLED}"
 api_ui_version = "${RANCHER_API_UI_VERSION}"

@@ -24,6 +24,21 @@ data "terraform_remote_state" "database" {
   }
 }
 
+data "aws_ami" "os" {
+  most_recent      = true
+
+  filter {
+    name = "architecture"
+    values = ["x86_64"]
+  }
+  filter {
+    name = "virtualization-type"
+    values = ["hvm"]
+  }
+
+  name_regex = "^${var.operating_system}"
+}
+
 data "template_file" "userdata" {
   template = "${file("${path.module}/files/userdata.template")}"
 
@@ -34,7 +49,6 @@ data "template_file" "userdata" {
     database_user     = "${data.terraform_remote_state.database.username}"
     database_password = "${data.terraform_remote_state.database.password}"
     rancher_version   = "${var.rancher_version}"
-    api_ui_version    = "${var.api_ui_version}"
     docker_version = "${var.docker_version}"
     rhel_selinux = "${var.rhel_selinux}"
     rhel_docker_native = "${var.rhel_docker_native}"
@@ -61,7 +75,8 @@ module "compute" {
 
   vpc_id          = "${var.aws_vpc_id}"
   name            = "${var.aws_env_name}-management"
-  ami_id          = "${var.aws_ami_id}"
+  //ami_id          = "${var.aws_ami_id}"
+  ami_id          = "${data.aws_ami.os.image_id}"
   instance_type   = "${var.aws_instance_type}"
   ssh_key_name    = "${var.key_name}"
   security_groups = "${join(",", list(data.terraform_remote_state.network.management_node_sgs))}"
