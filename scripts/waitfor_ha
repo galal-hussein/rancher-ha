@@ -1,0 +1,22 @@
+#!/bin/bash
+
+TIMEOUT=900
+ELAPSED=0
+FOUND=0
+
+while ${ELAPSED} -lt ${TIMEOUT}; do
+  if curl -sSfI https://${AWS_DOMAIN_NAME}/v2-beta; then
+    FOUND=1
+    break
+  fi
+  echo "."
+  ELAPSED=$((ELAPSED + 10))
+  sleep 10
+done
+
+if ${FOUND}; then
+  echo "Rancher HA URL: https://${AWS_DOMAIN_NAME}"
+else;
+  echo "Timeout Reached and setup is not ready...!!"
+  exit 1
+fi
