@@ -35,8 +35,16 @@ data "aws_ami" "os" {
     name = "virtualization-type"
     values = ["hvm"]
   }
+  filter {
+    name = "root-device-type"
+    values = ["ebs"]
+  }
+  //filter {
+  //  name = "name"
+  //  values = ["${var.operating_system}*"]
+  //}
 
-  name_regex = "^${var.operating_system}"
+  name_regex = "${var.operating_system}"
 }
 
 data "template_file" "userdata" {
