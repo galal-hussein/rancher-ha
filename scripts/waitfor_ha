@@ -4,8 +4,9 @@ TIMEOUT=900
 ELAPSED=0
 FOUND=0
 
+echo "Checking for https://${AWS_DOMAIN_NAME}"
 while [ ${ELAPSED} -lt ${TIMEOUT} ]; do
-  if curl -sSfI https://${AWS_DOMAIN_NAME}/v2-beta; then
+  if curl -sfI --output /dev/null https://${AWS_DOMAIN_NAME}/v2-beta 2>&1; then
     FOUND=1
     break
   fi
