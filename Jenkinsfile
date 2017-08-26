@@ -73,16 +73,9 @@ try {
       }
 
       stage ('Wait until the setup is ready') {
-        sh '''
-            while true; do
-              if curl -sSfI https://${AWS_DOMAIN_NAME}/v2-beta; then
-                break
-              fi
-            sleep 10
-            done
-
-            echo "Rancher HA URL: https://${AWS_DOMAIN_NAME}"
-        '''
+        sh "docker run --rm  " +
+          "--env-file .env " +
+          "rancherlabs/terraform_ha_v2:latest /bin/bash -c \'cd \"\$(pwd)\" && ./scripts/waitfor_ha\'"
         }
     } // wrap
   } // node
