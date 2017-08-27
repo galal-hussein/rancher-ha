@@ -16,8 +16,6 @@ variable "aws_instance_type" {}
 
 variable "rancher_version" {}
 
-variable "spot_enabled" {}
-
 variable "operating_system" {}
 
 variable "zone_id" {}

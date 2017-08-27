@@ -89,7 +89,6 @@ module "compute" {
   ssh_key_name    = "${var.key_name}"
   security_groups = "${join(",", list(data.terraform_remote_state.network.management_node_sgs))}"
   lb_ids          = "${join(",", list(module.management_elb.elb_id))}"
-  spot_enabled    = "${var.spot_enabled}"
 
   subnet_ids                  = "${data.terraform_remote_state.network.subnet_ids}"
   subnet_cidrs                = "${data.terraform_remote_state.network.subnet_cidrs}"
