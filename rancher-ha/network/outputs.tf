@@ -15,7 +15,7 @@ output "vpc_id" {
 }
 
 output "subnet_ids" {
-  value = "${var.aws_use_defaults == "true" ? data.aws_subnet_ids.default.ids : var.aws_subnet_ids}"
+  value = "${var.aws_use_defaults == "true" ? join(",", data.aws_subnet_ids.default.ids) : var.aws_subnet_ids}"
 }
 
 output "subnet_cidrs" {
