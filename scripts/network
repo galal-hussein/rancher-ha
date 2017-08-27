@@ -11,10 +11,11 @@ make SHELL='sh -x' init-s3
 
 # Initialize networking vars
 cat <<NETWORK >> network.tfvars
-aws_vpc_cidr = "$AWS_VPC_CIDR"
-aws_public_subnet_cidrs = "$AWS_PUBLIC_SUBNET_CIDRS"
-aws_private_subnet_cidrs = "$AWS_PRIVATE_SUBNET_CIDRS"
 aws_subnet_azs = "$AWS_SUBNET_AZS"
+aws_vpc_id = "$AWS_VPC_ID"
+aws_subnet_cidrs = "$AWS_SUBNET_CIDRS"
+aws_subnet_ids = "$AWS_SUBNET_IDS"
+aws_use_defaults = "${AWS_USE_DEFAULTS:-true}"
 server_cert_path = "../../files/crt.pem"
 server_key_path = "../../files/key.pem"
 ca_chain_path = "../../files/chain.pem"

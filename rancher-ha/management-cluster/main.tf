@@ -68,7 +68,7 @@ module "management_elb" {
 
   name                    = "${var.aws_env_name}-api-mgmt"
   security_groups         = "${data.terraform_remote_state.network.elb_sg_id}"
-  public_subnets          = "${var.aws_subnet_ids}"
+  public_subnets          = "${data.terraform_remote_state.network.subnet_ids}"
   instance_ssl_port       = "8080"
   proxy_proto_port_string = "80,8080"
   instance_http_port      = "80"
@@ -81,7 +81,7 @@ module "management_elb" {
 module "compute" {
   source = "../../modules/aws/compute/ha-mgmt"
 
-  vpc_id          = "${var.aws_vpc_id}"
+  vpc_id          = "${data.terraform_remote_state.network.vpc_id}"
   name            = "${var.aws_env_name}-management"
   //ami_id          = "${var.aws_ami_id}"
   ami_id          = "${data.aws_ami.os.image_id}"
@@ -91,8 +91,8 @@ module "compute" {
   lb_ids          = "${join(",", list(module.management_elb.elb_id))}"
   spot_enabled    = "${var.spot_enabled}"
 
-  subnet_ids                  = "${var.aws_subnet_ids}"
-  subnet_cidrs                = "${var.aws_subnet_cidrs}"
+  subnet_ids                  = "${data.terraform_remote_state.network.subnet_ids}"
+  subnet_cidrs                = "${data.terraform_remote_state.network.subnet_cidrs}"
   externally_defined_userdata = "${data.template_file.userdata.rendered}"
   health_check_type           = "${var.health_check_type}"
 

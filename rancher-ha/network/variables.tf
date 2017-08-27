@@ -17,3 +17,7 @@ variable "server_cert_path" {}
 variable "server_key_path" {}
 
 variable "ca_chain_path" {}
+
+variable "aws_use_defaults" {}
+
+variable "aws_subnet_ids" {}
