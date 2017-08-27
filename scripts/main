@@ -9,9 +9,6 @@ aws_secret_key = "$AWS_SECRET_ACCESS_KEY"
 aws_region = "$AWS_DEFAULT_REGION"
 aws_env_name = "$AWS_ENV_NAME"
 aws_s3_bucket = "$AWS_S3_BUCKET"
-aws_vpc_id = "$AWS_VPC_ID"
-aws_subnet_cidrs = "$AWS_SUBNET_CIDRS"
-aws_subnet_ids = "$AWS_SUBNET_IDS"
 MAIN
 
 

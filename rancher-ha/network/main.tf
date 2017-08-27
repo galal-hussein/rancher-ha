@@ -4,6 +4,29 @@ provider "aws" {
   region     = "${var.aws_region}"
 }
 
+# Get the default VPC in the region
+data "aws_vpc" "default" {
+  default    = true
+}
+
+data "aws_vpc" "vpc" {
+  id = "${var.aws_use_defaults == "true" ? data.aws_vpc.default.id : var.aws_vpc_id}"
+}
+
+// Get the default AZs
+data "aws_availability_zones" "default" {}
+
+// Get all default subnets ids
+data "aws_subnet_ids" "default" {
+  vpc_id            = "${data.aws_vpc.default.id}"
+}
+
+// Get the default subnets
+data "aws_subnet" "default" {
+  count = "${length(data.aws_subnet_ids.default.ids)}"
+  id = "${data.aws_subnet_ids.default.ids[count.index]}"
+}
+
 resource "aws_iam_server_certificate" "rancher_com" {
   name_prefix       = "${var.aws_env_name}-certificate"
   certificate_body  = "${file("${var.server_cert_path}")}"
@@ -19,14 +42,14 @@ resource "aws_iam_server_certificate" "rancher_com" {
 module "management_sgs" {
   source = "../../modules/aws/network/security_groups/mgmt/ha"
 
-  name        = "${var.aws_env_name}"
-  vpc_id               = "${var.aws_vpc_id}"
-  private_subnet_cidrs = "${var.aws_subnet_cidrs}"
+  name                 = "${var.aws_env_name}"
+  vpc_id               = "${data.aws_vpc.vpc.id}"
+  private_subnet_cidrs = "${var.aws_use_defaults == "true" ? join(",",data.aws_subnet.default.*.cidr_block) : var.aws_subnet_cidrs}"
 }
 
 module "bastion_sgs" {
   source = "../../modules/aws/network/security_groups/bastion"
 
   name                 = "${var.aws_env_name}"
-  vpc_id               = "${var.aws_vpc_id}"
+  vpc_id               = "${data.aws_vpc.vpc.id}"
 }
