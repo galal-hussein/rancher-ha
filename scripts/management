@@ -14,8 +14,6 @@ cat <<MGMT >> management-cluster.tfvars
 rancher_version = "${RANCHER_VERSION}"
 operating_system = "${AWS_OPERATING_SYSTEM}"
 aws_instance_type = "${AWS_INSTANCE_TYPE}"
-api_ui_version = "${RANCHER_API_UI_VERSION}"
-rancher_hostname = "${AWS_ENV_NAME}"
 domain_name = "${AWS_DOMAIN_NAME}"
 docker_version = "${RANCHER_DOCKER_VERSION}"
 rhel_selinux = "${RANCHER_RHEL_SELINUX}"

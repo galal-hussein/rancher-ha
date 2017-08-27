@@ -1,5 +1,3 @@
-variable "rancher_hostname" {}
-
 variable "domain_name" {}
 
 variable "aws_access_key" {}
