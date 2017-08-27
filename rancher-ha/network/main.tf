@@ -44,7 +44,7 @@ module "management_sgs" {
 
   name                 = "${var.aws_env_name}"
   vpc_id               = "${data.aws_vpc.vpc.id}"
-  private_subnet_cidrs = "${var.aws_use_defaults == "true" ? [data.aws_subnet.default.*.cidr_block] : var.aws_subnet_cidrs}"
+  private_subnet_cidrs = "${var.aws_use_defaults == "true" ? join(",",data.aws_subnet.default.*.cidr_block) : var.aws_subnet_cidrs}"
 }
 
 module "bastion_sgs" {
