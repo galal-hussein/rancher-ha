@@ -27,6 +27,8 @@ data "terraform_remote_state" "database" {
 data "aws_ami" "os" {
   most_recent      = true
 
+  owners = ["099720109477","309956199498","605812595337"]
+  
   filter {
     name = "architecture"
     values = ["x86_64"]
@@ -39,6 +41,7 @@ data "aws_ami" "os" {
     name = "root-device-type"
     values = ["ebs"]
   }
+
   //filter {
   //  name = "name"
   //  values = ["${var.operating_system}*"]
