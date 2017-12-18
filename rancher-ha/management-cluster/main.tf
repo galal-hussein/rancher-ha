@@ -83,7 +83,7 @@ module "compute" {
 
   vpc_id          = "${data.terraform_remote_state.network.vpc_id}"
   name            = "${var.aws_env_name}-management"
-  //ami_id          = "${var.aws_ami_id}"
+  root_volume_size    = "16"
   ami_id          = "${data.aws_ami.os.image_id}"
   instance_type   = "${var.aws_instance_type}"
   ssh_key_name    = "${var.key_name}"
