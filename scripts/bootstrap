@@ -13,3 +13,5 @@ chmod 600 files/*
 
 # Pull the Rancher Terraform modules
 git clone https://github.com/rancher/terraform-modules.git
+# pin the modules to specific version
+cd terraform-modules && git reset --hard a5d8964164e734ae373c7237fa7127e8b8d2625d
