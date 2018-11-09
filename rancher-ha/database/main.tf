@@ -25,6 +25,7 @@ module "database" {
   vpc_id             = "${data.terraform_remote_state.network.vpc_id}"
   source_cidr_blocks = "${concat(split(",", data.terraform_remote_state.network.subnet_cidrs))}"
   rds_instance_class = "${var.aws_rds_instance_class}"
+	rds_engine_version = "5.6.41"
   db_subnet_ids      = "${concat(split(",", data.terraform_remote_state.network.subnet_ids))}"
   rds_is_multi_az = "false"
   skip_final_snapshot = "true"
